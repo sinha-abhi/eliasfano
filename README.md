@@ -1,4 +1,4 @@
-# Elias-Fano Encoding
+# Elias-Fano Encoding DEVELOPMENT REPO
 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/sinha-abhi/EliasFano.jl/blob/master/LICENSE)
 
