@@ -6,6 +6,14 @@ from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 
+# gmpy2 is faster for bit manipulations, but seems to use more space.
+# For now, let's stick to regular ints.
+"""
+requires = [
+    "gmpy2>=2.0.8"
+]
+"""
+
 # Think about this later... I'm lazy right now
 #   Supporting earlier versions of Python 3 may be simple enough, 
 #   but Python 2 may be an ordeal I'm not interested in taking.
