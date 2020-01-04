@@ -45,7 +45,7 @@ class efarray():
         pass
 
     def __length_hint__(self):
-        # TODO
+        # TODO: not actually required, but just an optimization
         pass
 
     def __getitem__(self, key):
@@ -61,25 +61,28 @@ class efarray():
         pass
 
     def __contains__(self, item):
-        # TODO
+        # TODO: membership test operators
         pass
 
     def __iter__(self):
-        # TODO
+        # TODO: returns a new iterator over this container
         pass
 
+    # Concatentation may require reconstructing the entire list in some cases.
     def __add__(self, other):
-        # TODO
+        # TODO: self + other
         pass
 
     def __iadd__(self, other):
-        # TODO
+        # TODO: other + self
         pass
 
     def __radd__(self, other):
-        # TODO
+        # TODO: self += other
         pass
 
+    # Repetition can be implemented, but I don't see a use case
+    # since the list will be immutable anyway.
     def __mul__(self, other):
         # TODO
         pass
