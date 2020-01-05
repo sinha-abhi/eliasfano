@@ -1,9 +1,12 @@
+import collections.Sequence
 import math
 
+# TODO: A lot of the comments can be removed in the future. I only put them
+# there to make sure my reasoning is sound.
 class efarray():
     """
-    A quasi-succinct representation of a non-decreasing sequence of 
-    integers (in the mathematical sense).
+    An immutable quasi-succinct representation of a non-decreasing sequence of 
+    integers. See Elias-Fano encoding for more details.
     """
 
     def __init__(self, sequence, issorted=False):
@@ -28,11 +31,11 @@ class efarray():
             sequence = [x + self.offset for x in sequence]
 
         bound = sequence[-1] + 1
-        nel = len(sequence)
-        lb = int(math.floor(math.log(bound / nel)))
-        ulen = nel + (bound >> self.lb)
+        self.nel = len(sequence)
+        lb = int(math.floor(math.log(bound / self.nel)))
+        ulen = self.nel + (bound >> self.lb)
 
-        self.lower = [None] * nel
+        self.lower = [None] * self.nel
         self.upper = [None] * ulen
 
         # TODO: populate the lower and upper bits arrays 
@@ -42,56 +45,69 @@ class efarray():
 
     def __len__(self):
         # TODO: called for `len()`
-        pass
+        return self.nel
 
     def __length_hint__(self):
         # TODO: not actually required, but just an optimization
-        pass
+        raise NotImplementedError
 
-    def __getitem__(self, key):
-        # TODO: called for evaluation of self[key]
-        pass
+    def __getitem__(self, index):
+        if index < 0 or index >= self.nel:
+            raise IndexError
+        else:
+            # TODO: called for evaluation of self[index]
+            #       Can we possibly do this in constant time?
+            raise NotImplementedError
 
-    def __setitem__(self, key, value):
-        # TODO: this array should be immutable
-        pass
+    def __setitem__(self, index, value): pass
 
-    def __delitem__(self, key):
-        # TODO: this array should be immutable
-        pass
+    def __delitem__(self, key): pass
 
-    def __contains__(self, item):
-        # TODO: membership test operators
-        pass
+    def __contains__(self, value):
+        # This will have the same problem as `__iter__`. See below.
+        for v in self:
+            if v is value or v == value:
+                return True
+        return False
 
     def __iter__(self):
-        # TODO: returns a new iterator over this container
-        pass
+        # If `__getitem__` is not implemented in such a way that elements are
+        # accessed in constant time, then this method of generating an iterable
+        # may be painfully slow. I can't see any way around it.
+        try:
+            i = 0
+            while True:
+                v = self[i]
+                yield v
+                i += 1
+        except IndexError:
+            return
 
     # Concatentation may require reconstructing the entire list in some cases.
     def __add__(self, other):
         # TODO: self + other
-        pass
+        raise NotImplementedError
 
     def __iadd__(self, other):
         # TODO: other + self
-        pass
+        raise NotImplementedError
 
     def __radd__(self, other):
         # TODO: self += other
-        pass
+        raise NotImplementedError
 
     # Repetition can be implemented, but I don't see a use case
     # since the list will be immutable anyway.
     def __mul__(self, other):
         # TODO
-        pass
+        raise NotImplementedError
 
     def __rmul__(self, other):
         # TODO
-        pass
+        raise NotImplementedError
 
     def __imul__(self, other):
         # TODO
-        pass
+        raise NotImplementedError
 
+Sequence.register(efarray)
