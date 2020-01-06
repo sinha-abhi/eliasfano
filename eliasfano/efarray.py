@@ -2,7 +2,9 @@ import collections.Sequence
 import math
 
 # TODO: A lot of the comments can be removed in the future. I only put them
-# there to make sure my reasoning is sound.
+# there to explain my reasoning is sound. The main point of this library is to
+# be memory efficient (I would save performance is equally important, but there
+# is no way we can match the performance of the generic list). 
 class efarray():
     """
     An immutable quasi-succinct representation of a non-decreasing sequence of 
@@ -17,10 +19,18 @@ class efarray():
         ----------
         sequence : array_like
             List of integers, preferably sorted.
+        issorted : boolean
+            Passing `True` is equivalent to providing a guarentee that the
+            provided sequence is indeed sorted; i.e. no checks shall be made
+            internally to ensure that fact. If the sequence is not sorted, 
+            then the behavior of this class is undefined.
         """
         # Best case (already sorted) is O(n), worst case O(n log n).
         # Checking if sorted is O(n), so we gain nothing by checking.
-        sequence = sorted(sequence)
+        if not issorted:
+            sequence = sorted(sequence)
+        elif __debug__:
+            print("Warning: no check for sorted sequence")
 
         self.offset = 0
         if sequence[0] < 0:
@@ -35,13 +45,73 @@ class efarray():
         lb = int(math.floor(math.log(bound / self.nel)))
         ulen = self.nel + (bound >> self.lb)
 
+        # Actually, I don't think we want to use a `list` here because of space
+        # issues. I haven't tried to find the point at which using a list
+        # becomes more efficient than using an int (if there is one at all).
+        # Python has arbitrarily long ints now anyway.
+        #
+        # I did find using ints will save much more space. Here is some quick
+        # test code (based on the example in the notes pdf):
+        """
+        print("using int")
+        a = 0b10100001100
+        print(bin(a))
+        print(sys.getsizeof(a))
+
+        print("using list")
+        b = [0b01, 0b00, 0b00, 0b11, 0b00]
+        print(b)
+        print(sys.getsizeof(b))
+        """
+        # This gives the following:
+        """
+        using int
+        0b10100001100
+        28
+        using list
+        [1, 0, 0, 3, 0]
+        112
+        """
+        # So, I think a good way to to do it would be to have the lower bits
+        # array be initialized like:
+        #       self.lower = 1 << self.nel
+        # and then ignore the first bit of the array. Something similar will
+        # hold for the upper bits array.
         self.lower = [None] * self.nel
-        self.upper = [None] * ulen
+        self.upper = [0] * ulen
 
         # TODO: populate the lower and upper bits arrays 
 
         # push `sequence` out of scope to free its memory
         del sequence 
+
+    def __split__(self, index, value):
+        # Not sure if these needs to be its own method. I'm thinking that we
+        # may eventually have an optional parallel way of processing the 
+        # elements of the sequence, but I'd have to check if that actually 
+        # gives us any performance benefit before hand. If we decide not to 
+        # do that, then this probably doesn't need to be its own method.
+        """
+        Extract the lower and upper bits for the given value in the context of
+        the current efarray.
+        
+        Parameters
+        ----------
+        value : integer type
+            Value in the sequence.
+
+        Returns
+        -------
+        upper : integer type
+            Bits to be put in upper-bit array.
+        lower : integer type
+            Bits to be put in lower-bits array.
+        """
+        upper, lower = -1, -1
+
+        # TODO: implement splitting
+
+        return upper, lower
 
     def __len__(self):
         # TODO: called for `len()`
