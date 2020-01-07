@@ -42,7 +42,7 @@ class efarray():
 
         bound = sequence[-1] + 1
         self.nel = len(sequence)
-        lb = int(math.floor(math.log(bound / self.nel)))
+        lb = int(math.floor(math.log(bound / self.nel, 2)))
         ulen = self.nel + (bound >> self.lb)
 
         # Actually, I don't think we want to use a `list` here because of space
@@ -77,15 +77,22 @@ class efarray():
         #       self.lower = 1 << self.nel
         # and then ignore the first bit of the array. Something similar will
         # hold for the upper bits array.
+        #
+        # But, for the initial implementation, I think it's fine to just use
+        # lists just to have something basic working.
         self.lower = [None] * self.nel
         self.upper = [0] * ulen
 
-        # TODO: populate the lower and upper bits arrays 
+        for i, e in enumerate(sequence):
+            up, low = __split(i, e)
+            self.lower[i] = low
+            self.upper[i] = up
 
-        # push `sequence` out of scope to free its memory
+        # push `sequence` out of scope to free its memory 
+        # (is this really needed?)
         del sequence 
 
-    def __split__(self, index, value):
+    def __split(self, index, value):
         # Not sure if these needs to be its own method. I'm thinking that we
         # may eventually have an optional parallel way of processing the 
         # elements of the sequence, but I'd have to check if that actually 
