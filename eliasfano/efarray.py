@@ -83,42 +83,23 @@ class efarray():
         self.lower = [None] * self.nel
         self.upper = [0] * ulen
 
+        # Can we parallelize this to improve performance?
+        _pup = 0
         for i, e in enumerate(sequence):
-            up, low = __split(i, e)
-            self.lower[i] = low
+            # Find upper bits
+            up = e >> self.lb
+            updiff = up - _pup # this needs to be convereted to unary code
+            _pup = up
+
+
             self.upper[i] = up
+            
+            # Find lower bits
+            self.lower[i] = low
 
         # push `sequence` out of scope to free its memory 
         # (is this really needed?)
         del sequence 
-
-    def __split(self, index, value):
-        # Not sure if these needs to be its own method. I'm thinking that we
-        # may eventually have an optional parallel way of processing the 
-        # elements of the sequence, but I'd have to check if that actually 
-        # gives us any performance benefit before hand. If we decide not to 
-        # do that, then this probably doesn't need to be its own method.
-        """
-        Extract the lower and upper bits for the given value in the context of
-        the current efarray.
-        
-        Parameters
-        ----------
-        value : integer type
-            Value in the sequence.
-
-        Returns
-        -------
-        upper : integer type
-            Bits to be put in upper-bit array.
-        lower : integer type
-            Bits to be put in lower-bits array.
-        """
-        upper, lower = -1, -1
-
-        # TODO: implement splitting
-
-        return upper, lower
 
     def __len__(self):
         # TODO: called for `len()`
