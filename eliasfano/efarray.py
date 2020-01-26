@@ -1,6 +1,8 @@
 import collections.Sequence
 import math
 
+from utils import replace, setbit
+
 # TODO: A lot of the comments can be removed in the future. I only put them
 # there to explain my reasoning is sound. The main point of this library is to
 # be memory efficient (I would save performance is equally important, but there
@@ -29,8 +31,6 @@ class efarray():
         # Checking if sorted is O(n), so we gain nothing by checking.
         if not issorted:
             sequence = sorted(sequence)
-        elif __debug__:
-            print("Warning: no check for sorted sequence")
 
         self.offset = 0
         if sequence[0] < 0:
@@ -42,22 +42,29 @@ class efarray():
 
         bound = sequence[-1] + 1
         self.nel = len(sequence)
-        lb = int(math.floor(math.log(bound / self.nel, 2)))
+        self.lb = int(math.floor(math.log(bound / self.nel, 2)))
         ulen = self.nel + (bound >> self.lb)
 
         self.lower = 1 << self.nel
         self.upper = 1 << ulen
 
-        # Can we parallelize this to improve performance?
-        _pup = 0
+        _p_up = 0
+        _p_pos = ulen
+        _lb_mask = (1 << self.lb) - 1
         for i, e in enumerate(sequence):
-            # TODO: construct upper and lower bit arrays
-            #     Find upper bits
-            #     Find lower bits
+            # Find upper bits
+            up = e >> self.lb
+            diff = up - _p_up
+            upos = _p_pos - diff - 1
+            self.upper = setbit(self.upper, upos)
 
-        # push `sequence` out of scope to free its memory 
-        # (is this really needed?)
-        del sequence 
+            _p_up = up
+            _p_pos = upos
+
+            # Find lower bits
+            low = e & _lb_mask
+            lpos = self.nel - (i + 1)
+            self.lower = replace(self.lower, lpos, self.lb, low)
 
     def __len__(self):
         return self.nel
@@ -68,7 +75,8 @@ class efarray():
 
     def __getitem__(self, index):
         if index < 0 or index >= self.nel:
-            raise IndexError
+            raise IndexError("Index out of bonds, attempted to access index "
+                              + str(index))
         else:
             # TODO: called for evaluation of self[index]
             #       Can we possibly do this in constant time?
@@ -126,3 +134,4 @@ class efarray():
         raise NotImplementedError
 
 Sequence.register(efarray)
+
